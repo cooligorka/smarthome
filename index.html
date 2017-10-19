@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Главная</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container main-block" id="main">
+    <header class="col-md-12 col-sm-12 col-xs-12">
+        <h1 class="text-center col-md-12 col-sm-12 col-xs-12">Smart Home</h1>
+    </header>
+    <div class="col-md-12 col-sm-12 col-xs-12 ">
+        <nav class="navbar navbar-default">
+            <div class="navbar-header">
+                <a href="index.html" class="navbar-brand">Home</a>
+            </div>
+        </nav>
+    </div>
+    <div class="container-fluid col-md-3 col-sm-3 col-xs-3 box-form">
+        <form class="form-horizontal" name="adddev" method="" action="#" onsubmit="">
+            <div class="form-group">
+                <label for="device" class="text col-md-10 col-sm-10 col-xs-10">Select the device</label>
+                <div class="col-md-10 col-sm-10 col-xs-10 col-md-offset-1 col-sm-offset-1 col-xs-offset-1">
+                    <select class="form-control" name="device" id="device">
+                        <option value="fridge" class="slider">Fridge</option>
+                        <option value="oven" class="slider">Oven</option>
+                        <option value="lamp">Lamp</option>
+                    </select>
+                </div>
+            </div>
+            <label for="place" class="text col-md-10 col-sm-10 col-xs-10">Select the place</label>
+            <div class="form-group">
+                <div class="col-md-10 col-sm-10 col-xs-10 col-md-offset-1 col-sm-offset-1 col-xs-offset-1">
+                    <select class="form-control" name="place" id="place">
+                        <option value="kitchen">Kitchen</option>
+                        <option value="living room">Living Room</option>
+                        <option value="bedroom">Bedroom</option>
+                        <option value="restroom">Restroom</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="state" class="text col-md-10 col-sm-10 col-xs-10 ">Select the state</label>
+                <div class="col-md-10 col-sm-10 col-xs-10 col-md-offset-1 col-sm-offset-1 col-xs-offset-1">
+                    <select class="form-control" name="state" id="state">
+                        <option value="on">Enabled</option>
+                        <option value="off">Disabled</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="col-md-offset-1 col-sm-offset-1 col-xs-offset-1 col-md-10 col-sm-10 col-xs-10">
+            <button class="btn btn-success btn-block" id="btn" onclick="addDevice()">
+                Add the device
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer class="col-md-12 col-sm-12 col-xs-12 text-center">
+    <address><a href="mailto:sent@to.ua">Пишите: sent@to.ua</a></address>
+</footer>
+<script src="./js/js.js"></script>
+</body>
+</html>
