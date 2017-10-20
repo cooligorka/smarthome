@@ -1,108 +1,95 @@
 'use strict';
 
-function addDevice() {
-    var opt = document.forms.adddev.elements[0].selectedOptions;
 
-    if (opt[0].className === "slider") {
-        var box = new DeviceWithSlider();
-    } else {
-        box = new Device();
-    };
-
-    var div = document.createElement('div');
-
-    div.classList.add('col-md-2', 'container', 'col-sm-2', 'col-xs-2', 'box', 'text-center');
-    div.style.borderColor = box._state ? "green" : "red";
-    var src = box._device;
-
-    if (src === "fridge") {
-        src = "./images/fridge.png"
-    }
-    if (src === "lamp") {
-        src = "./images/lamp.png"
-    }
-    if (src === "oven") {
-        src = "./images/oven.png"
-    }
-
-    div.options = {
-        place: '<div>' + box._place + '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>',
-        img: '<img src=' + src + ' alt="..." class="img-responsive center-block padding-custom" width="150" height="200">',
-        buttonOn: '<button type="button" class="on btn btn-primary  col-md-5 col-sm-5 col-xs-5">ON</button>',
-        buttonOf: '<button type="button" class="off btn btn-danger  col-md-5 col-sm-5 col-xs-5">OFF</button>',
-        buttonInfo: '<button type="button" class="info btn btn-warning col-md-10 col-sm-10 col-xs-10 col-md-offset-1 col-sm-offset-1 col-xs-offset-1">Info</button>'
-    };
-
-    div.innerHTML = div.options.place + div.options.img + '<div class="btn-group btn-block col-md-offset-1 col-sm-offset-1 col-xs-offset-1">'
-        + div.options.buttonOn + div.options.buttonOf + '</div>' + div.options.buttonInfo;
-
-    div = document.getElementById('main').appendChild(div);
-
-    var slider = document.createElement("div");
-    slider.classList.add("col-md-offset-1", "col-sm-offset-1", "col-xs-offset-1", "col-md-10", "col-sm-10", "col-xs-10");
-    slider.innerHTML = '<input type="range" step="1" value="0" class="slide"/>';
-
-    if (box instanceof DeviceWithSlider) {
-        slider = div.appendChild(slider);
-        slider.firstChild.max = box._maxValue;
-        slider.firstChild.min = box._minValue;
-        slider.firstChild.addEventListener("change", function () {
-            box.evalSlider(this)
-        });
-        slider.firstChild.disabled = box._state ? false : true;
-    }
-    ;
-
-    div.getElementsByClassName('on')[0].addEventListener("click", function () {
-        box.on(div)
-    });
-    div.getElementsByClassName('off')[0].addEventListener("click", function () {
-        box.off(div)
-    });
-    div.getElementsByClassName('info')[0].addEventListener("click", function () {
-        box.getInfo()
-    });
-    div.getElementsByClassName('close')[0].addEventListener("click", function () {
-        div.remove()
-    });
-};
-
-function Device(place, device, state) {
-    place = document.getElementById('place').value;
-    device = document.getElementById('device').value;
-    state = document.getElementById('state').value === "on" ? true : false;
+function BasicDevice(name, place, device, state) {
     this._status = state ? 'enabled' : 'disabled';
     this._device = device;
     this._place = place;
     this._state = state;
-    return this;
+    this._name = name;
 };
 
-Device.prototype.on = function (event) {
-    event.style.borderColor = "green";
-    event.lastChild.firstChild.disabled = false;
-    this._state = true;
-    this._status = 'enabled';
-};
+BasicDevice.prototype = {
+    on: function () {
+        this._state = true;
+        this._status = 'enabled';
+    },
 
-Device.prototype.off = function (event) {
-    event.style.borderColor = "red";
-    event.lastChild.firstChild.disabled = true;
-    this._state = false;
-    this._status = 'disabled';
-};
+    off: function () {
+        this._state = false;
+        this._status = 'disabled';
+    },
 
-Device.prototype.getInfo = function () {
-    if (this._state) {
-        alert(this._device + " on " + this._place + " is " + this._status)
-    } else {
-        alert("device is disabled!")
+    getInfo: function () {
+        if (this._state) {
+            return this._device + " on " + this._place + " is " + this._status
+        } else {
+            throw new RangeError("device is disabled!")
+        }
     }
 };
 
-function DeviceWithSlider(device, place, state) {
-    Device.call(this, device, place, state);
-    this._sliderValue = 0;
+function DeviceWithChangedValue(name, place, device, state) {
+    BasicDevice.call(this, name, place, device, state);
+    Options.call(this);
+    this._changedValue = this._minValue;
+};
+
+DeviceWithChangedValue.prototype = Object.create(BasicDevice.prototype);
+
+DeviceWithChangedValue.prototype.constructor = DeviceWithChangedValue;
+
+DeviceWithChangedValue.prototype.validate = function () {
+    return !!(this._state && this._changedValue >= this._minValue && this._changedValue <= this._maxValue);
+};
+
+DeviceWithChangedValue.prototype.evalSlider = function (event) {
+    this._changedValue = event.value
+};
+
+DeviceWithChangedValue.prototype.setSliderValue = function (changedValue) {
+    this._changedValue = changedValue;
+    if (this.validate()) {
+        this._changedValue = changedValue
+    } else {
+        throw new RangeError("Bad value!")
+    }
+};
+
+DeviceWithChangedValue.prototype.increaseSliderValue = function () {
+    if (this.validate()) return ++this._changedValue;
+};
+
+DeviceWithChangedValue.prototype.decreaseSliderValue = function () {
+    if (this.validate()) return --this._changedValue;
+};
+
+DeviceWithChangedValue.prototype.getInfo = function () {
+    return BasicDevice.prototype.getInfo.call(this) + ' ' + this._parametr + ' ' + this._changedValue;
+};
+
+function DeviceWithChangedMode(name, place, device, state, mode) {
+    DeviceWithChangedValue.call(this, name, place, device, state);
+    this._mode = this.mode[mode];
+};
+
+DeviceWithChangedMode.prototype = Object.create(DeviceWithChangedValue.prototype);
+DeviceWithChangedMode.prototype.constructor = DeviceWithChangedMode;
+
+DeviceWithChangedMode.prototype.changeMod = function (mode) {
+    if (this._state && [mode] <= [this.mode].length) {
+        this._mode = this.mode[mode];
+    } else {
+        throw new RangeError("Bad value!")
+    }
+};
+
+DeviceWithChangedMode.prototype.getInfo = function () {
+    return DeviceWithChangedValue.prototype.getInfo.call(this) + 'mode is ' + this._mode
+};
+
+
+var Options = function () {
     if (this._device === "fridge") {
         this._parametr = "temperature";
         this._minValue = -30;
@@ -112,58 +99,44 @@ function DeviceWithSlider(device, place, state) {
         this._parametr = "temperature";
         this._minValue = 30;
         this._maxValue = 300;
+        this.mode = ['min', 'middle', 'max'];
     }
-};
-DeviceWithSlider.prototype = Object.create(Device.prototype);
-
-DeviceWithSlider.prototype.constructor = DeviceWithSlider;
-
-DeviceWithSlider.prototype.evalSlider = function (event) {
-    this._sliderValue = event.value
-};
-
-DeviceWithSlider.prototype.getInfo = function () {
-    if (this._state) {
-        alert(this._device + " on " + this._place + " is " + this._status + ' ' + this._parametr + ' ' + this._sliderValue)
-    } else {
-        alert("device is disabled!")
+    if (this._device === "TV") {
+        this._parametr = "chanel";
+        this._minValue = 0;
+        this._maxValue = 900;
+        this._mode = [1, 2, 3]
     }
 };
 
 
-// DeviceWithSlider.prototype.checkParameters = function () {
-//     return this.box._state === true && this.box._sliderValue >= this.box._minValue && this.box._sliderValue <= this.box._maxValue;
-// };
-// DeviceWithSlider.prototype.showSliderValue = function () {
-//         alert(this.box._sliderValue);
-// };
+var oven = new DeviceWithChangedMode('mydev', 'Kitchen', 'oven', false, 1);
+oven.on();
+var list = [];
+list.push(oven);
 
-// DeviceWithSlider.prototype.setSliderValue = function (sliderValue) {
-//         this.box._sliderValue = sliderValue;
-//         return this.box._sliderValue;
-//     } else { alert('Device is Off, cant set the value, or the value is out of range!')}
-// };
 
-// DeviceWithSlider.prototype.increaseSliderValue = function () {
-//     if(this.box._state === true && this.box._sliderValue > this.box._minValue && this.box._sliderValue < this.box._maxValue) return ++this.box._sliderValue;
-// };
-//
-// DeviceWithSlider.prototype.decreaseSliderValue = function () {
-//     if(this.box._state === true && this.box._sliderValue > this.box._minValue && this.box._sliderValue < this.box._maxValue) return --this.box._sliderValue;
-// };
 
-// //function DeviceWithRangedAndModeParam(device, place, minValue, maxValue, deviceOfParam, mode, sliderValue) {
-//     this._mode = mode;
-//     if (mode === undefined) mode = 'default';
-//     DeviceWithSliderValue.call(this, device, place, minValue, maxValue, deviceOfParam, sliderValue);
-// }
-//
-// DeviceWithRangedAndModeParam.prototype = Object.create(DeviceWithSliderValue.prototype);
-//
-// DeviceWithRangedAndModeParam.prototype.constructor = DeviceWithRangedAndModeParam;
-//
-//
-// //var oven = new DeviceWithRangedAndModeParam('Oven', 'Kitchen', 0, 300, 'temperature');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
