@@ -77,7 +77,7 @@ DeviceWithChangedMode.prototype = Object.create(DeviceWithChangedValue.prototype
 DeviceWithChangedMode.prototype.constructor = DeviceWithChangedMode;
 
 DeviceWithChangedMode.prototype.changeMod = function (mode) {
-    if (this._state && [mode] <= [this.mode].length) {
+    if (this._state && mode <= this.mode.length) {
         this._mode = this.mode[mode];
     } else {
         throw new RangeError("Bad value!")
